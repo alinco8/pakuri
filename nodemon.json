@@ -1,0 +1,10 @@
+{
+    "exec": "ts-node src/server.ts",
+    "ext": "js ts json",
+    "watch": [
+        "src/server.ts"
+    ],
+    "events": {
+        "start": "cls"
+    }
+}
