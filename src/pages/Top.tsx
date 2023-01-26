@@ -12,8 +12,8 @@ import Matter, {
     World,
 } from 'matter-js';
 
-class Blocks {
-    blocks: Array<Body>;
+class Blocks<T> {
+    blocks: Array<T>;
 
     constructor(sizeX: number, sizeY: number) {
         var s = 64;
@@ -49,7 +49,10 @@ class Blocks {
                     })
             );
     }
-    get(x: number, y: number) {}
+    set(x: number, y: number, value: T) {
+        this.blocks[x][y] = value;
+    }
+    destroy(x: number, y: number) {}
 }
 
 function Top() {
@@ -59,7 +62,7 @@ function Top() {
     var s = 64;
     var w = 5 * s + s;
     var h = 7 * s + s;
-    var blocks = new Blocks(5, 7);
+    var blocks = new Blocks<Body>(5, 7); // |{ render: { fillStyle: string } }
 
     const ClickHandler = (
         e: React.MouseEvent<HTMLCanvasElement>
@@ -77,86 +80,10 @@ function Top() {
             var clickY = clickY + s / 2;
             var tileX = Math.floor(clickX / s) - 1;
             var tileY = Math.floor(clickY / s) - 1;
-            var block = blocks[tileX][tileY];
 
-            checkAndDelete(tileX, tileY);
+            blocks.destroy(tileX, tileY);
         }
     };
-
-    function checkAndDelete(x: number, y: number) {
-        var body = blocks[x][y];
-        (blocks[x][y] as any) = {
-            render: { fillStyle: '' },
-        };
-
-        const color = body.render.fillStyle;
-
-        body.collisionFilter = {
-            group: -1,
-            category: 2,
-            mask: 0,
-        };
-        Composite.remove(engine.world, body);
-
-        if (
-            blocks[x - 1] &&
-            blocks[x - 1][y].render.fillStyle === color
-        ) {
-            checkAndDelete(x - 1, y);
-        }
-
-        if (
-            blocks[x + 1] &&
-            blocks[x + 1][y].render.fillStyle === color
-        ) {
-            checkAndDelete(x + 1, y);
-        }
-
-        if (
-            blocks[x][y - 1] &&
-            blocks[x][y - 1].render.fillStyle === color
-        ) {
-            checkAndDelete(x, y - 1);
-        }
-
-        if (
-            blocks[x][y + 1] &&
-            blocks[x][y + 1].render.fillStyle === color
-        ) {
-            checkAndDelete(x, y + 1);
-        }
-        var newBody = Bodies.rectangle(
-            x * s + s,
-            0 * s + s - 20,
-            s,
-            s,
-            {
-                friction: 0.01,
-                render: {
-                    fillStyle: [
-                        'red',
-                        'orange',
-                        'yellow',
-                        'green',
-                        'blue',
-                    ][Math.floor(Math.random() * 4)],
-                },
-            }
-            // );
-            // World.add(engine.world, newBody);
-            // blocks[x] = [
-            //     newBody,
-            //     ...blocks[x].slice(0, y),
-            //     ...blocks[x].slice(y + 1),
-            // ];
-            // console.log(
-            //     blocks
-            //         .map((v) =>
-            //             v.map((b) => b.render.fillStyle)
-            //         )
-            //         .reverse()
-        );
-    }
 
     useEffect(() => {
         engine = Engine.create({});
@@ -197,12 +124,12 @@ function Top() {
                 isStatic: true,
                 render: { fillStyle: 'blue' },
             }),
-            ...blocks.flat(),
         ]);
 
         Runner.run(runner, engine);
         Render.run(render);
     });
+    Composite.add(engine.world, blocks.blocks.flat());
 
     return (
         <>

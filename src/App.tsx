@@ -14,9 +14,7 @@ function App() {
                 <Routes>
                     <Route
                         path="/"
-                        element={
-                            <Top />
-                        }
+                        element={<Top />}
                     ></Route>
                 </Routes>
             </BrowserRouter>
